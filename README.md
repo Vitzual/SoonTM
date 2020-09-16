@@ -1,2 +1,3 @@
-# SoonTM
+# SoonTM | Discord Bot
+
 Soon™
