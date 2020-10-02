@@ -11,7 +11,7 @@ import datetime
 
 TOKEN = "NzQ5NDM1MjA3MTYwOTU0ODgw.X0r77Q.ffOkO3PZ4qM3I5qN08PzyXBL8eI"  # Bot token -- used to push code to bot
 bot = commands.Bot(command_prefix="!", description="Syntax: <needed> [optional] [option1|option2]\nMade by Vitzual")
-startup_extensions = ["Cog.admin", "Cog.reload", "Cog.games", "Cog.economy", "Cog.experience", "Cog.items"] # Load commands via COG
+startup_extensions = ["Cog.admin", "Cog.reload", "Cog.games", "Cog.economy", "Cog.experience", "Cog.adventure"] # Load commands via COG
 
 @bot.event 
 async def on_ready():
@@ -19,54 +19,90 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-  if message.author.id == 716704555890507887:
-    return
-  elif message.content.startswith('!'):
-    await bot.process_commands(message)
-    return
-  else:
-    blacklist = "Axiiom/blacklist.json"
-    with open(blacklist) as f:
-      data = json.load(f)
-    mod = False
-    for look in message.author.roles:
-        if look.name == "Moderator":
-            mod = True
-    if mod:
+    if message.author.id == 716704555890507887:
         return
-    for scan in data[0]["words"]:
-      if scan.lower() in message.content.lower() and message.channel.id in data[0]["channels"]:
-        database = "Axiiom/user_records.json"
-        with open(database) as f:
-          records = json.load(f)
-        index = 0
-        bypass = False
-        for look in records:
-          if look["user_id"] == message.author.id:
-            look["warns"].append("We do not tolerate vulgar language on the server.")
-            new_data = {
-              "user_id": look["user_id"],
-              "warns": look["warns"]
-            }
-            records.append(new_data)
-            with open(database, "w") as f:
-              json.dump(records, f, indent=4)
-            del records[index]
-            with open(database, "w") as f:
-              json.dump(records, f, indent=4)
-            bypass = True
-          index+=1
+    elif message.channel.id != 749434411648417854:
+        print(f"({message.author} in {message.channel.name}) : {message.content}")
+        return
+    elif message.content.startswith('!'):
+        await bot.process_commands(message)
+        return
+    else:
+        db,index,bypass = "Axiiom/user_ranks.json",0,False
+        with open(db) as f:
+            xpdb = json.load(f)
+        for scan in xpdb:
+            if scan["user_id"] == message.author.id:
+                new_data = {
+                  "user_id": scan["user_id"],
+                  "xp": int(scan["xp"]+random.randint(5, 10)),
+                  "rank": scan["rank"]
+                }
+                xpdb.append(new_data)
+                del xpdb[index]
+                with open(db, "w") as f:
+                    json.dump(xpdb, f, indent=4)
+                operation = check_rankup(message.author.id, scan["xp"], new_data["xp"])
+                if operation == 1:
+                    embed = discord.Embed(title=f"{message.author.name} | Level Up!", description=f"You have leveled up to level {check_level(message.author.id)}!", color=14957195)
+                    await message.channel.send(embed=embed)
+                elif operation == 2:
+                    rank = bot.get_role({check_rank(message.author.id)})
+                    await message.author.add_roles(rank)
+                    embed = discord.Embed(title=f"{message.author.name} | Rank Up!", description=f"Congratulations! You ranked up to {rank.mention}!", color=14957195)
+                    await message.channel.send(embed=embed)
+                bypass = True
+            index+=1
         if not bypass:
-          new_data = {
-            "user_id": message.author.id,
-            "warns": ["We do not tolerate vulgar language on the server."]
-          }
-          records.append(new_data)
-          with open(database, "w") as f:
-            json.dump(records, f, indent=4)
-        await message.delete()
-        embed = discord.Embed(title=f"Warning | Blacklisted Word", description=f"Your message has been removed {message.author.mention}\n\n**Auto warned**\nWe do not tolerate vulgar language on the server.", color=discord.Color.red())
-        await message.channel.send(embed=embed)
+            new_data = {
+              "user_id": message.author.id,
+              "xp": random.randint(5, 10),
+              "rank": 568614562526396427
+            }
+            xpdb.append(new_data)
+            with open(db, "w") as f:
+                json.dump(xpdb, f, indent=4)
+        blacklist, mod = "Axiiom/blacklist.json", True
+        with open(blacklist) as f:
+            data = json.load(f)
+        for look in message.author.roles:
+            if look.name == "Moderator":
+                mod = True
+        if mod:
+            return
+        for scan in data[0]["words"]:
+            if scan.lower() in message.content.lower() and message.channel.id in data[0]["channels"]:
+                database = "Axiiom/user_records.json"
+                with open(database) as f:
+                    records = json.load(f)
+                index = 0
+                bypass = False
+                for look in records:
+                    if look["user_id"] == message.author.id:
+                        look["warns"].append("We do not tolerate vulgar language on the server.")
+                        new_data = {
+                            "user_id": look["user_id"],
+                            "warns": look["warns"]
+                        }
+                        records.append(new_data)
+                        with open(database, "w") as f:
+                            json.dump(records, f, indent=4)
+                        del records[index]
+                        with open(database, "w") as f:
+                            json.dump(records, f, indent=4)
+                        bypass = True
+                        index+=1
+                if not bypass:
+                    new_data = {
+                        "user_id": message.author.id,
+                        "warns": ["We do not tolerate vulgar language on the server."]
+                    }
+                    records.append(new_data)
+                    with open(database, "w") as f:
+                        json.dump(records, f, indent=4)
+                await message.delete()
+                embed = discord.Embed(title=f"Warning | Blacklisted Word", description=f"Your message has been removed {message.author.mention}\n\n**Auto warned**\nWe do not tolerate vulgar language on the server.", color=discord.Color.red())
+                await message.channel.send(embed=embed)
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -169,5 +205,59 @@ def load(db, uid):
         return data, scan, index 
       index+=1
   return data, False, False
+
+def check_rankup(a, b, c):
+    if int(0.16 * math.sqrt(b)) < int(0.16 * math.sqrt(c)):
+        database = "Axiiom/xp_ranks.json"
+        with open(database) as f:
+            data = json.load(f)
+        index, holder = 0, 0
+        for scan in data:
+            if scan["requirement"] > largest:
+                largest, holder = scan["requirement"], index
+            index+=1
+        database,index = "Axiiom/user_ranks.json",0
+        with open(database) as f:
+            ranks = json.load(f)
+        for scan in ranks:
+            if scan["user_id"] == a:
+                if data[holder]["rank"] != scan["rank"]:
+                    new_data = {
+                      "user_id": scan["user_id"],
+                      "xp": scan["xp"],
+                      "rank": data[holder]["rank"]
+                    }
+                    ranks.append(new_data)
+                    del ranks[index]
+                    with open(database, "w") as f:
+                        json.dump(ranks, f, indent=4)
+                    return 2
+                else:
+                    return 1
+            index+=1
+    return 0
+    
+def check_level(a):
+    return int(0.16 * math.sqrt(a))
+
+def check_rank(a):
+    database = "Axiiom/user_ranks.json",0
+    with open(database) as f:
+        ranks = json.load(f)
+    for scan in ranks:
+        if scan["user_id"] == a:
+            return scan["rank"]
+    return 568614562526396427
+
+
+
+
+
+
+
+
+
+
+
 
 bot.run(TOKEN)

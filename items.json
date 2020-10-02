@@ -1,0 +1,13 @@
+[
+    {
+        "item_name": "testaroo",
+        "item_type": "armor",
+        "item_class": "health",
+        "item_variable": "50",
+        "item_description": "testaroo",
+        "item_link": "https://tr.rbxcdn.com/f170ba85d4966e68dcc17c450cf30009/420/420/Avatar/Png",
+        "item_effects": [
+            "thorns"
+        ]
+    }
+]
