@@ -9,7 +9,7 @@ import sys
 import json
 import datetime
 
-TOKEN = "NzQ5NDM1MjA3MTYwOTU0ODgw.X0r77Q.ffOkO3PZ4qM3I5qN08PzyXBL8eI"  # Bot token -- used to push code to bot
+TOKEN = "TOKEN HERE"  # Bot token -- used to push code to bot
 bot = commands.Bot(command_prefix="!", description="Syntax: <needed> [optional] [option1|option2]\nMade by Vitzual")
 startup_extensions = ["Cog.admin", "Cog.reload", "Cog.games", "Cog.economy", "Cog.experience", "Cog.adventure"] # Load commands via COG
 
